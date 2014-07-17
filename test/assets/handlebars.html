@@ -1,0 +1,27 @@
+<!doctype html>
+<html xmlns:hx="http://purl.org/NET/hinclude">
+    <head>
+        <meta charset="utf-8">
+        <title>hinclude + handlebars</title>
+        <script type="text/javascript" src="test/asset/js/handlebars-v1.3.0.js"></script>
+        <script type="text/javascript" src="hinclude.js"></script>
+    </head>
+    <body>
+        <hx:include src="includes/handlebars_included.html">
+            {
+                "menu" : [
+                    {
+                        "name" : "Go here",
+                        "url" : "/go-here"
+                    },{
+                        "name" : "Go there",
+                        "url" : "/go-there"
+                    },{
+                        "name" : "Go somewhere",
+                        "url" : "/go-somewhere"
+                    }
+                ]
+            }
+        </hx:include>
+    </body>
+</html>

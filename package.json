@@ -7,7 +7,10 @@
       {
         "name": "Fabio Fabbrucci",
         "email": "fabio.fabbrucci@gmail.com"
-      } 
+      },{
+        "name": "Vittorio Vittori",
+        "email": "me@vittoriovittori.com"
+      }
     ],
      "dependencies" : {
         "jslint"   :  "*"

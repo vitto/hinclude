@@ -38,10 +38,20 @@ var hinclude;
   hinclude = {
     classprefix: "include_",
 
-    set_content_async: function (element, req) {
+    get_response_text: function(node_data, response_text) {
+      var template;
+      if (typeof node_data !== "string" && typeof Handlebars !== "undefined") {
+        template = Handlebars.compile(response_text);
+        return template(node_data);
+      } else {
+        return response_text;
+      }
+    },
+
+    set_content_async: function (element, req, node_data) {
       if (req.readyState === 4) {
         if (req.status === 200 || req.status === 304) {
-          element.innerHTML = req.responseText;
+          element.innerHTML = hinclude.get_response_text(node_data, req.responseText);
           this.eval_js(element);
         }
         element.className = hinclude.classprefix + req.status;
@@ -49,22 +59,22 @@ var hinclude;
     },
 
     buffer: [],
-    set_content_buffered: function (element, req) {
+    set_content_buffered: function (element, req, node_data) {
       if (req.readyState === 4) {
         hinclude.buffer.push([element, req]);
         hinclude.outstanding -= 1;
         if (hinclude.outstanding === 0) {
-          hinclude.show_buffered_content();
+          hinclude.show_buffered_content(node_data);
         }
       }
     },
 
-    show_buffered_content: function () {
+    show_buffered_content: function (node_data) {
       while (hinclude.buffer.length > 0) {
         var include = hinclude.buffer.pop();
 
         if (include[1].status === 200 || include[1].status === 304) {
-          include[0].innerHTML = include[1].responseText;
+          include[0].innerHTML = this.get_response_text(node_data, include[1].responseText);
           this.eval_js(include[0]);
         }
         include[0].className = hinclude.classprefix + include[1].status;
@@ -107,6 +117,25 @@ var hinclude;
     },
 
     include: function (element, url, media, incl_cb) {
+
+      var node_data, node_value;
+      node_data  = "";
+      node_value = element.childNodes[0].nodeValue;
+
+      if (typeof node_value !== "undefined") {
+        node_value = node_value.replace(/^\s+/, "");
+        for (var i = node_value.length - 1; i >= 0; i -= 1) {
+          if (/\S/.test(node_value.charAt(i))) {
+            node_value = node_value.substring(0, i + 1);
+            break;
+          }
+        }
+
+        if (node_value.length > 0) {
+          node_data = eval("(" + node_value + ")");
+        }
+      }
+
       if (media && window.matchMedia && !window.matchMedia(media).matches) {
         return;
       }
@@ -132,7 +161,7 @@ var hinclude;
         if (req) {
           this.outstanding += 1;
           req.onreadystatechange = function () {
-            incl_cb(element, req);
+            incl_cb(element, req, node_data);
           };
           try {
             req.open("GET", url, true);

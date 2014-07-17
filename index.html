@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:hx="http://purl.org/NET/hinclude">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>HInclude Tests</title>
+    <script type="text/javascript" src="handlebars-v1.3.0.js"></script>
+    <script type="text/javascript" src="hinclude.js"></script>
+</head>
+<body>
+
+<h1>hinclude.js test page</h1>
+
+<h2 id="h">Basic Include</h2>
+
+<p id="a" name="a"><hx:include src="included"></hx:include></p>
+
+<h2>Default Content</h2>
+
+<p id="b"><hx:include src="new">this content will be overwritten by the included content</hx:include>.</p>
+
+<h2>Error Handling</h2>
+
+<p id="c"><hx:include src="nothing"><span class="error_text error_404">this content is shown because there was a 404</span><span class="error_text error_500">this content is shown because there was a 500</span></hx:include>.</p>
+
+</body>
+</html>
