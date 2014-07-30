@@ -38,6 +38,20 @@ var hinclude;
   hinclude = {
     classprefix: "include_",
 
+    currentLoaded : 0,
+    allLoaded : false,
+
+    onLoad : function() {
+      console.log("loaded all");
+    },
+
+    addIncludeToLoadedList : function() {
+      this.currentLoaded = this.currentLoaded + 1;
+      if (hinclude.includes.length === this.currentLoaded) {
+        hinclude.onLoad();
+      }
+    },
+
     get_response_text: function(node_data, response_text) {
       var template;
       if (typeof node_data !== "string" && typeof Handlebars !== "undefined") {
@@ -52,7 +66,8 @@ var hinclude;
       if (req.readyState === 4) {
         if (req.status === 200 || req.status === 304) {
           element.innerHTML = hinclude.get_response_text(node_data, req.responseText);
-          this.eval_js(element);
+          hinclude.eval_js(element);
+          hinclude.addIncludeToLoadedList();
         }
         element.className = hinclude.classprefix + req.status;
       }
@@ -76,6 +91,7 @@ var hinclude;
         if (include[1].status === 200 || include[1].status === 304) {
           include[0].innerHTML = this.get_response_text(node_data, include[1].responseText);
           this.eval_js(include[0]);
+          hinclude.addIncludeToLoadedList();
         }
         include[0].className = hinclude.classprefix + include[1].status;
       }
@@ -104,8 +120,10 @@ var hinclude;
         this.includes = document.getElementsByTagName("include");
       }
       if (mode === "async") {
+        //finish
         callback = this.set_content_async;
       } else if (mode === "buffered") {
+        //finish
         callback = this.set_content_buffered;
         var timeout = this.get_meta("include_timeout", 2.5) * 1000;
         setTimeout(hinclude.show_buffered_content, timeout);
@@ -120,10 +138,10 @@ var hinclude;
 
       var node_data, node_value;
       node_data  = "";
-      node_value = element.childNodes[0].nodeValue;
-
-      if (typeof node_value !== "undefined") {
+      if (typeof element.childNodes[0] !== "undefined") {
+        node_value = element.childNodes[0].nodeValue.toString();
         node_value = node_value.replace(/^\s+/, "");
+
         for (var i = node_value.length - 1; i >= 0; i -= 1) {
           if (/\S/.test(node_value.charAt(i))) {
             node_value = node_value.substring(0, i + 1);
@@ -134,6 +152,7 @@ var hinclude;
         if (node_value.length > 0) {
           node_data = eval("(" + node_value + ")");
         }
+
       }
 
       if (media && window.matchMedia && !window.matchMedia(media).matches) {
